@@ -1,0 +1,132 @@
+# Entries are ordered alphabetically by canonical parameter name.
+# This dataset conforms to docs/gold-reference-schema.md.
+# Source: riscv-unified-db commit e195c8b2ca0c3e152ac0214e940f1aed3c4f6876.
+
+- name: COUNTINHIBIT_EN
+  category: named
+  udb_file: spec/std/isa/param/COUNTINHIBIT_EN.yaml
+  section: "3.1.12"
+  canonical_anchor: norm:mcountinhibit_sz_warl_op1
+  canonical_citation: >
+    The counter-inhibit register csr:mcountinhibit[] is a 32-bit *WARL* register that controls which of the hardware performance-monitoring counters increment.
+  secondary_anchors:
+    - norm:mcountinhibit_only_inc
+    - norm:mcountinhibit_op2
+  related_parameters:
+    - HPM_COUNTER_EN
+    - MCOUNTENABLE_EN
+    - MCOUNTINHIBIT_IMPLEMENTED
+  mapping_type: simple
+  classification_rationale: The specification defines the architectural function of mcountinhibit to disable performance counters. The corresponding UDB parameter COUNTINHIBIT_EN models which specific counters can be disabled, making this a named parameter.
+
+- name: HCOUNTENABLE_EN
+  category: named
+  udb_file: spec/std/isa/param/HCOUNTENABLE_EN.yaml
+  section: "3.1.11"
+  canonical_anchor: norm:mcounteren_tm_set
+  canonical_citation: >
+    When this bit is set, access to the csr:stimecmp[] or csr:vstimecmp[] register is permitted in S-mode if implemented, and access to the csr:vstimecmp[] register (via csr:stimecmp[]) is permitted in VS-mode if implemented and not otherwise prevented by the csr::[tm] bit in csr:hcounteren[].
+  secondary_anchors: []
+  related_parameters:
+    - MCOUNTENABLE_EN
+    - SCOUNTENABLE_EN
+    - HPM_COUNTER_EN
+  mapping_type: simple
+  classification_rationale: The specification defines hypervisor-level counter controls associated with the hcounteren register (e.g., controlling guest/virtualization counter accesses). The UDB parameter HCOUNTENABLE_EN represents this enablement policy, making it a named parameter.
+
+- name: HPM_COUNTER_EN
+  category: named
+  udb_file: spec/std/isa/param/HPM_COUNTER_EN.yaml
+  section: "3.1.10"
+  canonical_anchor: norm:mhpmcounter_num
+  canonical_citation: >
+    The hardware performance monitor includes 29 additional 64-bit event counters, csr:mhpmcounter3[]–csr:mhpmcounter31[].
+  secondary_anchors:
+    - norm:mhpmcounter_mandatory
+    - norm:mhpmcounter_mhpmevent_rdonly0
+    - norm:mhpmcounter_warl
+    - norm:mhpmcounter_sz
+  related_parameters:
+    - COUNTINHIBIT_EN
+    - MCOUNTENABLE_EN
+    - HPM_EVENTS
+  mapping_type: simple
+  classification_rationale: The specification defines the set of 29 additional performance counters. The corresponding UDB parameter HPM_COUNTER_EN controls which of these specific counters are enabled in a given implementation, making it a named parameter.
+
+- name: HPM_EVENTS
+  category: named
+  udb_file: spec/std/isa/param/HPM_EVENTS.yaml
+  section: "3.1.10"
+  canonical_anchor: norm:mhpmevent_sz_warl_op
+  canonical_citation: >
+    The event selector CSRs, csr:mhpmevent3[]–csr:mhpmevent31[], are 64-bit *WARL* registers that control which event causes the corresponding counter to increment.
+  secondary_anchors:
+    - norm:mhpmevent_enc
+    - norm:mhpmcounter_mhpmevent_rdonly0
+  related_parameters:
+    - HPM_COUNTER_EN
+  mapping_type: simple
+  classification_rationale: The specification defines the event selector registers. The corresponding UDB parameter HPM_EVENTS models the list of allowed event values that selectors can accept, making it a named parameter.
+
+- name: MCOUNTENABLE_EN
+  category: named
+  udb_file: spec/std/isa/param/MCOUNTENABLE_EN.yaml
+  section: "3.1.11"
+  canonical_anchor: norm:mcounteren_sz
+  canonical_citation: >
+    The counter-enable csr:mcounteren[] register is a 32-bit register that controls the availability of the hardware performance-monitoring counters to the next-lowest privileged mode.
+  secondary_anchors:
+    - norm:mcounteren_op
+    - norm:mcounteren_inc_inaccessible
+    - norm:mcounteren_clr_ill_inst_exc
+    - norm:mcounteren_flds_mandatory_warl
+    - norm:mcounteren_flds_rdonly0
+    - norm:mcounteren_presence
+  related_parameters:
+    - HPM_COUNTER_EN
+    - SCOUNTENABLE_EN
+    - HCOUNTENABLE_EN
+  mapping_type: simple
+  classification_rationale: The specification defines the machine-level mcounteren register to control access to counters. The corresponding UDB parameter MCOUNTENABLE_EN models which specific counters can be enabled/disabled from mcounteren, making it a named parameter.
+
+- name: MCOUNTINHIBIT_IMPLEMENTED
+  category: config-dependent
+  udb_file: spec/std/isa/param/MCOUNTINHIBIT_IMPLEMENTED.yaml
+  section: "3.1.12"
+  canonical_anchor: norm:mcountinhibit_not_impl
+  canonical_citation: >
+    If the csr:mcountinhibit[] register is not implemented, the implementation behaves as though the register were set to zero.
+  secondary_anchors: []
+  related_parameters:
+    - COUNTINHIBIT_EN
+  mapping_type: simple
+  classification_rationale: The specification states that the mcountinhibit CSR is optional (it behaves as set to zero if not implemented). The UDB parameter MCOUNTINHIBIT_IMPLEMENTED determines whether this CSR is present, making it a configuration-dependent parameter.
+
+- name: SCOUNTENABLE_EN
+  category: named
+  udb_file: spec/std/isa/param/SCOUNTENABLE_EN.yaml
+  section: "3.1.11"
+  canonical_anchor: norm:mcounteren_set_nxt_priv
+  canonical_citation: >
+    When one of these bits is set, access to the corresponding register is permitted in the next implemented privilege mode (S-mode if implemented, otherwise U-mode).
+  secondary_anchors: []
+  related_parameters:
+    - MCOUNTENABLE_EN
+    - HCOUNTENABLE_EN
+    - HPM_COUNTER_EN
+  mapping_type: simple
+  classification_rationale: The specification defines supervisor-level counter access enablement (where the scounteren register controls U-mode access to counters). The UDB parameter SCOUNTENABLE_EN represents this policy capability, making it a named parameter.
+
+- name: TIME_CSR_IMPLEMENTED
+  category: config-dependent
+  udb_file: spec/std/isa/param/TIME_CSR_IMPLEMENTED.yaml
+  section: "3.1.11"
+  canonical_anchor: norm:time_op_rdonly
+  canonical_citation: >
+    The csr:time[] CSR is a read-only shadow of the memory-mapped csr:mtime[] register.
+  secondary_anchors:
+    - norm:timeh_op_rdonly
+    - norm:time_csr_architectural_availability
+  related_parameters: []
+  mapping_type: simple
+  classification_rationale: The specification defines the architectural behavior of the read-only shadow time CSR. The corresponding UDB parameter TIME_CSR_IMPLEMENTED determines whether this specific CSR is implemented or accesses trap to M-mode, making it a configuration-dependent parameter.
