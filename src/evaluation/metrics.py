@@ -15,9 +15,9 @@ class MetricsSummary:
     precision: float
     recall: float
     f1: float
-    tp: float
-    fp: float
-    fn: float
+    tp: int
+    fp: int
+    fn: int
 
 
 @dataclass(frozen=True)

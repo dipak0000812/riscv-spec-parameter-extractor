@@ -9,6 +9,7 @@ import hashlib
 import json
 from pathlib import Path
 import re
+import sys
 from typing import Any
 import yaml
 from src.extractor.backends import ExtractionBackend
@@ -157,8 +158,8 @@ def run_extraction(
                 with open(cache_file, "r", encoding="utf-8") as f:
                     cache_data = json.load(f)
                     raw_response = cache_data.get("response")
-            except Exception:
-                # If cache read fails, ignore and re-extract
+            except (OSError, json.JSONDecodeError):
+                # Cache read failed — re-extract from API on next step
                 raw_response = None
 
     # Fetch from API if cache miss
@@ -178,9 +179,8 @@ def run_extraction(
                 }
                 with open(cache_file, "w", encoding="utf-8") as f:
                     json.dump(cache_payload, f, indent=2, ensure_ascii=False)
-            except Exception:
-                # Pass silently if cache write fails
-                pass
+            except OSError as e:
+                print(f"Warning: failed to write cache to {cache_file}: {e}", file=sys.stderr)
 
     # Parse and validate Candidates
     candidates = parse_and_validate_candidates(raw_response, backend.model_version)

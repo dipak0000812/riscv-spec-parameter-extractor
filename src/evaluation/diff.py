@@ -6,7 +6,6 @@ gold-reference entries.
 """
 
 from dataclasses import dataclass
-from typing import List, Tuple, Optional
 from src.extractor.run_extraction import Candidate
 
 
@@ -14,14 +13,14 @@ from src.extractor.run_extraction import Candidate
 class GoldEntry:
     """Represents an entry in the gold-reference dataset."""
 
-    name: Optional[str]
+    name: str | None
     category: str
     udb_file: str
     section: str
     canonical_anchor: str
     canonical_citation: str
-    secondary_anchors: List[str]
-    related_parameters: List[str]
+    secondary_anchors: list[str]
+    related_parameters: list[str]
     mapping_type: str
     classification_rationale: str
 
@@ -31,20 +30,20 @@ class DiffResult:
     """Contains results of comparing extracted candidates against gold reference."""
 
     # True Positives: (candidate, gold_entry)
-    true_positives: List[Tuple[Candidate, GoldEntry]]
+    true_positives: list[tuple[Candidate, GoldEntry]]
 
     # Partial Matches: (candidate, gold_entry, mismatch_reason)
     # Typically name matches but category differs.
-    partial_matches: List[Tuple[Candidate, GoldEntry, str]]
+    partial_matches: list[tuple[Candidate, GoldEntry, str]]
 
     # False Positives (Hallucinations): candidates that did not match any gold entry
-    false_positives: List[Candidate]
+    false_positives: list[Candidate]
 
     # False Negatives (Missed): gold entries that were not matched by any candidate
-    false_negatives: List[GoldEntry]
+    false_negatives: list[GoldEntry]
 
 
-def normalize_name(name: Optional[str]) -> str:
+def normalize_name(name: str | None) -> str:
     """Normalize parameter names for case-insensitive, symbol-agnostic matching."""
     if name is None:
         return ""
@@ -52,7 +51,7 @@ def normalize_name(name: Optional[str]) -> str:
 
 
 def diff_candidates_against_gold(
-    candidates: List[Candidate], gold_entries: List[GoldEntry]
+    candidates: list[Candidate], gold_entries: list[GoldEntry]
 ) -> DiffResult:
     """Compare a list of extracted Candidates against GoldEntries.
 
@@ -61,10 +60,10 @@ def diff_candidates_against_gold(
     - Unnamed parameters are matched by anchor or citation overlap.
     - Duplicates/re-extractions are handled (only first match counts, others are FP).
     """
-    true_positives: List[Tuple[Candidate, GoldEntry]] = []
-    partial_matches: List[Tuple[Candidate, GoldEntry, str]] = []
-    false_positives: List[Candidate] = []
-    false_negatives: List[GoldEntry] = []
+    true_positives: list[tuple[Candidate, GoldEntry]] = []
+    partial_matches: list[tuple[Candidate, GoldEntry, str]] = []
+    false_positives: list[Candidate] = []
+    false_negatives: list[GoldEntry] = []
 
     # Keep track of which gold entries have been matched
     matched_gold_indices = set()

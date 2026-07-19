@@ -14,8 +14,8 @@ from src.extractor.run_extraction import run_extraction, Candidate
 from src.evaluation.diff import diff_candidates_against_gold, GoldEntry
 from src.evaluation.metrics import compute_metrics
 
-# List of 228 verified parameters from riscv-unified-db repo.
-# Used for programmatic validation of UDB path and related parameter existence.
+# Parameters scraped from riscv-unified-db at commit e195c8b2ca0c3e152ac0214e940f1aed3c4f6876.
+# To update: list all *.yaml filenames under spec/std/isa/param/ in the UDB repository.
 VERIFIED_UDB_PARAMS = {
     "ARCH_ID_VALUE", "ASID_WIDTH", "CACHE_BLOCK_SIZE", "CONFIG_PTR_ADDRESS", "COUNTINHIBIT_EN",
     "DBG_HCONTEXT_WIDTH", "DBG_SCONTEXT_WIDTH", "DCSR_MPRVEN_TYPE", "DCSR_STEPIE_TYPE",
@@ -100,14 +100,14 @@ class UniqueKeyLoader(yaml.SafeLoader):
     """YAML safe loader that strictly forbids duplicate keys in mappings."""
 
     def construct_mapping(self, node, deep=False):
-        mapping = []
+        seen_keys: set = set()
         for key_node, value_node in node.value:
             key = self.construct_object(key_node, deep=deep)
-            if key in mapping:
+            if key in seen_keys:
                 raise yaml.constructor.ConstructorError(
                     f"Duplicate key '{key}' found in YAML mapping"
                 )
-            mapping.append(key)
+            seen_keys.add(key)
         return super().construct_mapping(node, deep=deep)
 
 
@@ -374,6 +374,15 @@ def extract_cmd(
     api_key: str | None,
 ) -> None:
     """Run parameter extraction on a specification excerpt."""
+    if api_key is not None:
+        click.echo(
+            click.style(
+                "Warning: Passing API keys on the command line may expose them in shell history. "
+                "Prefer GEMINI_API_KEY or OPENAI_API_KEY environment variables.",
+                fg="yellow",
+            ),
+            err=True,
+        )
     click.echo(f"Initializing {backend} backend...")
     try:
         if backend == "gemini":
@@ -420,11 +429,22 @@ def extract_cmd(
     default=None,
     help="Path to write the detailed Markdown report (e.g. results/evaluation.md).",
 )
-def evaluate_cmd(candidates: Path, gold: Path, output: Path | None) -> None:
+@click.option(
+    "--backend-name",
+    type=str,
+    default=None,
+    hidden=True,
+    help="Backend name for the evaluation report (passed internally from the run command).",
+)
+def evaluate_cmd(candidates: Path, gold: Path, output: Path | None, backend_name: str | None) -> None:
     """Evaluate extracted candidates against a gold reference dataset."""
     click.echo(f"Evaluating {candidates} against {gold}...")
     try:
-        # Load Candidates
+        # Load Candidates using safe_load — candidates are model-generated artifacts
+        # and may legitimately contain repeated parameter names (the diff engine
+        # counts duplicates as false positives). The stricter UniqueKeyLoader is
+        # reserved for gold_reference.yaml, which is authoritative and must not
+        # have duplicate keys.
         with open(candidates, "r", encoding="utf-8") as f:
             raw_cands = yaml.safe_load(f) or []
         candidates_list = [
@@ -508,7 +528,10 @@ def evaluate_cmd(candidates: Path, gold: Path, output: Path | None) -> None:
             md_lines.append("## Metadata")
             md_lines.append(f"- **Model Used**: `{model_name}`")
             md_lines.append("- **Prompt Version**: `v1`")
-            md_lines.append(f"- **Backend Used**: `mock` (deterministic extraction simulation)")
+            if backend_name == "mock":
+                md_lines.append("- **Backend Used**: `mock` (deterministic extraction simulation)")
+            elif backend_name:
+                md_lines.append(f"- **Backend Used**: `{backend_name}`")
             md_lines.append("- **Evaluation Dataset**: RISC-V Privileged ISA Manual (§3.1.10–§3.1.12, Machine Counters)")
             md_lines.append("- **Gold Reference Version**: Derived from `riscv-unified-db` commit `e195c8b2ca0c3e152ac0214e940f1aed3c4f6876`")
             md_lines.append("")
@@ -601,7 +624,7 @@ def evaluate_cmd(candidates: Path, gold: Path, output: Path | None) -> None:
             md_lines.append("## Lessons Learned")
             md_lines.append("- **Category Optionality Boundaries**: Distinguishing between register field parameters (`named`) and overall register presence optionality (`config-dependent`) is a major challenge for the LLM. The prompt should explicitly define how to classify registers whose implementation depends on platform constraints.")
             md_lines.append("- **Value of Separable Metrics**: Separating evaluation into strict and relaxed F1 scores prevents categorization mistakes (which are easy to align via post-processing or prompt tweaks) from obscuring high raw parameter discovery recall (relaxed F1 of 87.50% vs. strict F1 of 75.00%).")
-            md_lines.append("- **Anchor Validation Rigor**: Standardizing embedded HTML anchors (`<!-- anchor: ... -->`) provides a foolproof mechanism for checking citation alignment and locating extracted text, preventing hallucinated citations from sliding through.")
+            md_lines.append("- **Anchor Validation Rigor**: Standardizing embedded HTML anchors (`<!-- anchor: ... -->`) provides a reliable, auditable mechanism for checking citation alignment and locating extracted text, preventing hallucinated citations from sliding through.")
             md_lines.append("")
             md_lines.append("## Current Limitations")
             md_lines.append("- **Limited Excerpt Scope**: Evaluation is restricted to §3.1.10–§3.1.12. Extending the evaluation scope to cover the entire spec manual requires a robust text chunker to prevent context dilution.")
@@ -703,12 +726,13 @@ def run_cmd(
         api_key=api_key,
     )
     
-    # Run evaluation
+    # Run evaluation — pass backend name so the report records it accurately
     ctx.invoke(
         evaluate_cmd,
         candidates=candidates,
         gold=gold,
         output=output,
+        backend_name=backend,
     )
 
 

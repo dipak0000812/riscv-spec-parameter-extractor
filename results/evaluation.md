@@ -85,7 +85,7 @@ The parameter **`MSTATUS_FS_LEGAL_VALUES`** was flagged as a False Positive beca
 ## Lessons Learned
 - **Category Optionality Boundaries**: Distinguishing between register field parameters (`named`) and overall register presence optionality (`config-dependent`) is a major challenge for the LLM. The prompt should explicitly define how to classify registers whose implementation depends on platform constraints.
 - **Value of Separable Metrics**: Separating evaluation into strict and relaxed F1 scores prevents categorization mistakes (which are easy to align via post-processing or prompt tweaks) from obscuring high raw parameter discovery recall (relaxed F1 of 87.50% vs. strict F1 of 75.00%).
-- **Anchor Validation Rigor**: Standardizing embedded HTML anchors (`<!-- anchor: ... -->`) provides a foolproof mechanism for checking citation alignment and locating extracted text, preventing hallucinated citations from sliding through.
+- **Anchor Validation Rigor**: Standardizing embedded HTML anchors (`<!-- anchor: ... -->`) provides a reliable, auditable mechanism for checking citation alignment and locating extracted text, preventing hallucinated citations from sliding through.
 
 ## Current Limitations
 - **Limited Excerpt Scope**: Evaluation is restricted to §3.1.10–§3.1.12. Extending the evaluation scope to cover the entire spec manual requires a robust text chunker to prevent context dilution.
