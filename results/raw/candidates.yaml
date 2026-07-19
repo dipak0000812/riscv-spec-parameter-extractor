@@ -1,0 +1,76 @@
+- candidate_name: COUNTINHIBIT_EN
+  category: named
+  chapter: Machine-Level CSRs
+  section: 3.1.12
+  paragraph: norm:mcountinhibit_sz_warl_op1
+  exact_quotation: The counter-inhibit register csr:mcountinhibit[] is a 32-bit *WARL*
+    register that controls which of the hardware performance-monitoring counters increment.
+  reason_extracted: Configures which counters are inhibited.
+  model: mock-model-v1
+- candidate_name: HPM_COUNTER_EN
+  category: named
+  chapter: Machine-Level CSRs
+  section: 3.1.10
+  paragraph: norm:mhpmcounter_num
+  exact_quotation: The hardware performance monitor includes 29 additional 64-bit
+    event counters, csr:mhpmcounter3[]–csr:mhpmcounter31[].
+  reason_extracted: Controls HPM counter enablement.
+  model: mock-model-v1
+- candidate_name: HPM_EVENTS
+  category: named
+  chapter: Machine-Level CSRs
+  section: 3.1.10
+  paragraph: norm:mhpmevent_sz_warl_op
+  exact_quotation: The event selector CSRs, csr:mhpmevent3[]–csr:mhpmevent31[], are
+    64-bit *WARL* registers that control which event causes the corresponding counter
+    to increment.
+  reason_extracted: Configures events for counters.
+  model: mock-model-v1
+- candidate_name: MCOUNTENABLE_EN
+  category: named
+  chapter: Machine-Level CSRs
+  section: 3.1.11
+  paragraph: norm:mcounteren_sz
+  exact_quotation: The counter-enable csr:mcounteren[] register is a 32-bit register
+    that controls the availability of the hardware performance-monitoring counters
+    to the next-lowest privileged mode.
+  reason_extracted: Enables counters for lower privilege modes.
+  model: mock-model-v1
+- candidate_name: MCOUNTINHIBIT_IMPLEMENTED
+  category: config-dependent
+  chapter: Machine-Level CSRs
+  section: 3.1.12
+  paragraph: norm:mcountinhibit_not_impl
+  exact_quotation: If the csr:mcountinhibit[] register is not implemented, the implementation
+    behaves as though the register were set to zero.
+  reason_extracted: Whether counter inhibit register is implemented.
+  model: mock-model-v1
+- candidate_name: SCOUNTENABLE_EN
+  category: named
+  chapter: Machine-Level CSRs
+  section: 3.1.11
+  paragraph: norm:mcounteren_set_nxt_priv
+  exact_quotation: When one of these bits is set, access to the corresponding register
+    is permitted in the next implemented privilege mode (S-mode if implemented, otherwise
+    U-mode).
+  reason_extracted: Enables counter access for supervisor/user mode.
+  model: mock-model-v1
+- candidate_name: TIME_CSR_IMPLEMENTED
+  category: named
+  chapter: Machine-Level CSRs
+  section: 3.1.11
+  paragraph: norm:time_op_rdonly
+  exact_quotation: The csr:time[] CSR is a read-only shadow of the memory-mapped csr:mtime[]
+    register.
+  reason_extracted: Configuration of shadow time register.
+  model: mock-model-v1
+- candidate_name: MSTATUS_FS_LEGAL_VALUES
+  category: named
+  chapter: Machine-Level CSRs
+  section: 3.1.10
+  paragraph: norm:mhpmcounter_num
+  exact_quotation: The hardware performance monitor includes 29 additional 64-bit
+    event counters...
+  reason_extracted: Hallucinated parameter not relevant/present in this specific excerpt
+    context.
+  model: mock-model-v1
