@@ -1,5 +1,8 @@
 # Spec-to-Parameters Extractor with Evaluation Harness — Implementation Plan v2
 
+> **Note**: This is the pre-implementation planning document. The project is now complete. Architectural decisions made during implementation are documented in `docs/engineering-decisions.md`.
+
+
 ## Goal
 
 Build a CLI tool that extracts RISC-V architectural parameters from spec prose using LLM prompting, evaluates extraction quality against a manually-verified gold-reference list sourced from the real [riscv-unified-db](https://github.com/riscv/riscv-unified-db), and reports precision/recall/F1 with full traceability.

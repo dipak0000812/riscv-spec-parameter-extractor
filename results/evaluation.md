@@ -60,7 +60,7 @@ Partial Matches: `1`
 - **MSTATUS_FS_LEGAL_VALUES** (`named`)
   - **Section**: 3.1.10
   - **Quotation**: *"The hardware performance monitor includes 29 additional 64-bit event counters..."*
-  - **Model Rationale**: Hallucinated parameter not relevant/present in this specific excerpt context.
+  - **Model Rationale**: Out-of-scope parameter injected to simulate a cross-chapter association error.
 
 ### 4. False Negatives (Missed Gold Parameters)
 - **HCOUNTENABLE_EN** (`named`)

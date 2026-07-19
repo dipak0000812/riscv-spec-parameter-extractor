@@ -1,5 +1,7 @@
 # RISC-V Spec-to-Parameters Extractor with Evaluation Harness
 
+> **Note**: This is the original project proposal written before implementation began. The project is now complete. Current status is described in the README.
+
 ## Project Proposal & Design Specification
 
 ### 1. Objective

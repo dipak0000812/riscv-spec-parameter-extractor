@@ -16,7 +16,9 @@ The primary chapter selected for evaluation is **Machine-Level Performance Count
 ---
 
 ## 2. Sources Consulted
-The parameters were cross-referenced with the official files in `riscv/riscv-unified-db` (commit `e195c8b2ca0c3e152ac0214e940f1aed3c4f6876`). The specific UDB files mapped are:
+The parameters were cross-referenced with the official files in the
+[riscv-unified-db](https://github.com/riscv-software-src/riscv-unified-db) repository
+at commit `e195c8b2ca0c3e152ac0214e940f1aed3c4f6876`. The specific UDB files mapped are:
 - `spec/std/isa/param/COUNTINHIBIT_EN.yaml`
 - `spec/std/isa/param/HCOUNTENABLE_EN.yaml`
 - `spec/std/isa/param/HPM_COUNTER_EN.yaml`

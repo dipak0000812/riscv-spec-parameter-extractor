@@ -1,87 +1,125 @@
 # RISC-V Spec-to-Parameters Extractor with Evaluation Harness
 
-A framework for extracting implementation-configurable parameters from the RISC-V ISA spec prose using LLMs, with automated precision/recall evaluation against a Unified Database (UDB) derived gold reference.
-
-This project targets the **Machine-Level Performance Counters & HPM (§3.1.10–§3.1.12)** section of the RISC-V Privileged ISA Manual.
+A tool for extracting implementation-configurable architectural parameters from RISC-V ISA specification prose using LLMs, with automated precision/recall evaluation against a Unified Database (UDB) derived gold reference.
 
 ## Motivation
-Architectural specifications for processors (such as the RISC-V ISA manuals) describe many parameters and configuration options that vary between implementations (e.g. counter presence, optional CSRs, and platform limits). Extracting these parameters manually to populate hardware verification databases or Unified Databases (UDB) is tedious and error-prone. This project builds a reliable LLM-based extraction pipeline paired with a deterministic evaluation harness to measure the precision and recall of automated parameter extraction against a verified gold reference.
+
+RISC-V processor specifications describe many configuration options that vary between implementations — counter presence, optional CSRs, platform limits. Extracting these parameters manually to populate hardware verification databases or Unified Databases (UDB) is tedious and error-prone. This project builds an LLM-based extraction pipeline paired with a deterministic evaluation harness to measure extraction quality against a verified gold reference.
 
 ## Repository Scope
-The current scope of this repository is strictly focused on **Machine-Level Performance Counters & HPM (§3.1.10–§3.1.12)** of the RISC-V Privileged ISA Manual. This section defines performance-monitoring counter registers, event selectors, and availability control behaviors. Extraction and evaluation target the 8 canonical parameters defined within this specification range and traced to their source in the RISC-V Unified Database.
 
-## Repository Structure
-* `data/` — Target specification excerpts and UDB-aligned gold reference parameters.
-* `docs/` — Schemas, methodology definitions, and engineering decisions.
-* `prompts/` — System prompts and few-shot templates.
-* `src/` — CLI entrypoint, LLM backends, comparison engines, and metrics.
-* `tests/` — Automated test suite verifying schema constraints, diffs, and caching.
+The current scope is strictly **Machine-Level Performance Counters & HPM (§3.1.10–§3.1.12)** of the RISC-V Privileged ISA Manual. This section defines performance-monitoring counter registers, event selectors, and availability control behaviors. Extraction and evaluation target the 8 canonical parameters in this range, each traced to a source file in the RISC-V Unified Database.
 
 ## Installation
-Ensure you have Python 3.11+ and a virtual environment activated:
+
+Requires Python 3.11+. Create and activate a virtual environment, then install:
+
 ```bash
-# Install core package with dev dependencies
+# Core package with dev dependencies
 pip install -e .[dev]
 
-# Optional: Install Gemini extras
+# Optional: add Gemini support
 pip install -e .[gemini]
 
-# Optional: Install OpenAI extras
+# Optional: add OpenAI support
 pip install -e .[openai]
 ```
 
 ## Quickstart
-Verify the repository installation by running the automated unit test suite:
+
+Run the complete pipeline offline — no API key required:
+
+```bash
+python -m src.cli run --backend mock
+```
+
+This runs extraction using the deterministic mock backend, writes candidates to
+`results/raw/candidates.yaml`, and generates a metrics report at `results/evaluation.md`.
+
+A pre-generated example report is committed at [`results/evaluation.md`](results/evaluation.md)
+and can be read without running anything.
+
+To verify the test suite:
+
 ```bash
 python -m pytest -v
 ```
 
-## Offline Reproduction
-To execute the end-to-end extraction and evaluation pipeline completely offline (no API keys required), run:
-```bash
-python -m src.cli run --backend mock
-```
-This command runs parameter extraction using the offline mock backend, writes candidates to `results/example_candidates.yaml`, and generates the detailed metrics report at `results/evaluation.md`.
-
 ## Running with Gemini
-Ensure the `GEMINI_API_KEY` environment variable is set:
+
+Set `GEMINI_API_KEY` as an environment variable (recommended over passing it on the command line):
+
 ```bash
+export GEMINI_API_KEY=your_key_here
 python -m src.cli run --backend gemini --model gemini-2.5-flash
 ```
 
 ## Running with OpenAI
-Ensure the `OPENAI_API_KEY` environment variable is set:
+
+Set `OPENAI_API_KEY` as an environment variable:
+
 ```bash
+export OPENAI_API_KEY=your_key_here
 python -m src.cli run --backend openai --model gpt-4o-mini
 ```
 
-## Running Evaluation
-If you already have an extracted candidates YAML file, you can evaluate it separately:
+## Running Evaluation Separately
+
+If you already have a candidates YAML file from a previous extraction run:
+
 ```bash
-python -m src.cli evaluate --candidates results/example_candidates.yaml --gold data/gold_reference.yaml --output results/evaluation.md
+python -m src.cli evaluate \
+  --candidates results/example_candidates.yaml \
+  --gold data/gold_reference.yaml \
+  --output results/evaluation.md
 ```
 
-## Repository Layout
-- `data/spec_excerpts/machine_counters.md` — Target specification excerpt (§3.1.10–§3.1.12).
-- `data/gold_reference.yaml` — Curated gold reference list.
-- `docs/gold-reference-schema.md` — Specifications for the gold YAML structure.
-- `docs/gold-reference.md` — Methodology for curation of the gold reference.
-- `docs/methodology.md` — Category definitions and worked examples.
-- `docs/engineering-decisions.md` — Design decisions and architectural rationales.
-- `prompts/current.md` — The active prompt template.
-- `src/cli.py` — Click-based command interface.
+## Project Layout
+
+```
+data/
+  gold_reference.yaml             # Curated gold reference (8 parameters, UDB-traced)
+  spec_excerpts/machine_counters.md  # Target specification excerpt (§3.1.10–§3.1.12)
+docs/
+  gold-reference-schema.md        # Schema definition for gold_reference.yaml
+  gold-reference.md               # Construction methodology and inclusion criteria
+  methodology.md                  # Category definitions and worked examples
+  engineering-decisions.md        # Design decisions and rationale
+  architecture.md                 # Package layout and design principles
+prompts/
+  current.md                      # Active prompt template (v1)
+  v1.md                           # Versioned prompt archive
+results/
+  evaluation.md                   # Committed example evaluation report
+  example_candidates.yaml         # Committed example extraction output
+src/
+  cli.py                          # CLI entrypoint (validate-gold, extract, evaluate, run)
+  evaluation/diff.py              # Candidate-to-gold comparison engine
+  evaluation/metrics.py           # Precision / recall / F1 calculation
+  extractor/backends.py           # LLM backend interface (Gemini, OpenAI, Mock)
+  extractor/run_extraction.py     # Extraction orchestration and response caching
+tests/                            # Pytest unit tests (18 tests)
+```
 
 ## Current Limitations
-- **Manual Scope**: Currently restricted to §3.1.10–§3.1.12 (Machine-Level Performance Counters).
-- **Exact Name Normalization**: Normalization handles capitalization and symbols (spaces/underscores/dashes), but semantic synonyms (e.g. `HPM_COUNT` instead of `HPM_COUNTER_EN`) are not dynamically mapped.
-- **Context Capacity**: Evaluating long specification books requires text pre-chunking.
+
+- **Scope**: Restricted to §3.1.10–§3.1.12. Covering the full ISA manual would require text pre-chunking.
+- **Name normalization**: Handles capitalization and symbols (e.g. `HPM_COUNTER_EN` vs `hpm_counter_en`), but semantic synonyms (e.g. `HPM_COUNT`) are not mapped and score as misses.
+- **Context capacity**: Single-context prompting works at this excerpt size. Longer chapters would exceed practical context limits.
 
 ## Future Extensions
-- **API Schema Constraints**: Enforce JSON output schema constraints at the LLM API layer (via Gemini configurations).
-- **Synonyms Dictionary**: Incorporate a synonym alias mapping in the evaluation diff engine.
-- **Dynamic Few-Shot RAG**: Retrieve positive and negative examples dynamically based on section content similarity.
+
+- **JSON schema constraints**: Enforce output structure at the LLM API layer (via Gemini `response_schema`) to eliminate category enum violations.
+- **Synonyms dictionary**: Derive a synonym alias map from UDB parameter description files and integrate it into the matching engine.
+- **Dynamic few-shot retrieval**: Retrieve positive/negative examples from other spec chapters based on section content similarity.
 
 ---
 
+## Acknowledgements
+
+- Specification text sourced from the [RISC-V ISA Manual](https://github.com/riscv/riscv-isa-manual) (Privileged ISA, §3.1.10–§3.1.12).
+- Gold reference parameters traced to [riscv-unified-db](https://github.com/riscv-software-src/riscv-unified-db) at commit `e195c8b2ca0c3e152ac0214e940f1aed3c4f6876`.
+
 ## License
+
 Licensed under the BSD 3-Clause License. See [LICENSE](LICENSE) for details.

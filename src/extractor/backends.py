@@ -227,7 +227,7 @@ class MockBackend(ExtractionBackend):
                 "section": "3.1.10",
                 "paragraph": "norm:mhpmcounter_num",
                 "exact_quotation": "The hardware performance monitor includes 29 additional 64-bit event counters...",
-                "reason_extracted": "Hallucinated parameter not relevant/present in this specific excerpt context."
+                "reason_extracted": "Out-of-scope parameter injected to simulate a cross-chapter association error."
             }
         ]
         return json.dumps(mock_candidates)
